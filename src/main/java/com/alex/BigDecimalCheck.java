@@ -4,8 +4,15 @@ import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
+import javax.sound.midi.Soundbank;
+
+/**
+ * Prevent calling BigDecimal.divide(...) without define ROUND_MODE
+ */
 public class BigDecimalCheck extends AbstractCheck {
     public static final String MSG_KEY = "bigDecimal.noRoundingMode";
+
+    private final int SAFE_DEPTH = 200;
 
     public int[] getDefaultTokens() {
         return getRequiredTokens();
@@ -35,7 +42,7 @@ public class BigDecimalCheck extends AbstractCheck {
             return;
         }
 
-        checkDivide(beginAST, variable);
+        checkDivide(beginAST, variable, 0);
     }
 
     /**
@@ -78,11 +85,15 @@ public class BigDecimalCheck extends AbstractCheck {
 
     /**
      * check all lines
-     * @param sourceAST
+     * @param beginAST
      * @param variable
      */
-    private void checkDivide(final DetailAST sourceAST, final DetailAST variable) {
-        DetailAST ast = sourceAST;
+    private void checkDivide(final DetailAST beginAST, final DetailAST variable, int depth) {
+        if (depth++ > SAFE_DEPTH) {
+            return;
+        }
+
+        DetailAST ast = beginAST;
         do {
             if (ast.getType() != TokenTypes.METHOD_CALL && ast.getFirstChild() == null) {
                 ast = ast.getNextSibling();
@@ -98,11 +109,10 @@ public class BigDecimalCheck extends AbstractCheck {
             }
 
             if (ast.getFirstChild() != null) {
-                checkDivide(ast, variable);
+                checkDivide(ast.getFirstChild(), variable, depth);
             }
             ast = ast.getNextSibling();
         } while (ast != null);
-
     }
 
     /**
@@ -123,7 +133,7 @@ public class BigDecimalCheck extends AbstractCheck {
         DetailAST variableName = dot.getFirstChild();
         if (variableName == null
                 || variableName.getType() != TokenTypes.IDENT
-                || !variable.equals(variableName.getText())) {
+                || !variable.getText().equals(variableName.getText())) {
             return false;
         }
 
@@ -133,7 +143,6 @@ public class BigDecimalCheck extends AbstractCheck {
                 || !"divide".equals(methodName.getText())) {
             return false;
         }
-
         return true;
     }
 

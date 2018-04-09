@@ -4,6 +4,9 @@ import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
+/**
+ * Prevent to use Integer.parseInt
+ */
 public class IntegerParseCheck extends AbstractCheck {
 
     public static final String MSG_KEY = "integer.noParseInt";
