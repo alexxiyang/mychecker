@@ -1,0 +1,24 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'com.alex'
+version = '1.2'
+
+description = """mychecker"""
+
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+
+
+repositories {
+        
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+dependencies {
+    compile group: 'com.puppycrawl.tools', name: 'checkstyle', version:'8.3'
+    testCompile group: 'junit', name: 'junit', version:'3.8.1'
+}
